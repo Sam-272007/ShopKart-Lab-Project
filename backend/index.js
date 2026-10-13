@@ -31,29 +31,18 @@ app.use(cors({
         if (!origin || allowedOrigins.has(origin)) {
             return callback(null, true);
         }
-        return callback(new Error("Origin is not allowed by CORS"));
+        try {
+            const host = new URL(origin).hostname;
+            if (host === "localhost" || host === "127.0.0.1" || host.endsWith(".vercel.app")) {
+                return callback(null, true);
+            }
+        } catch {
+            // ignore url parsing error
+        }
+        return callback(null, true);
     },
     credentials: true
 }));
-
-// Routes
-app.use("/customers", customerRoutes);
-app.use("/products", productRoutes);
-app.use("/wishlist", wishlistRoutes);
-app.use("/cart", cartRoutes);
-app.use("/orders", orderRoutes);
-
-app.get("/test-route", (req, res) => {
-    res.json({
-        message: "Routes are working"
-    });
-});
-// Test route
-app.get("/", (req, res) => {
-    res.json({
-        message: "ShopKart Backend is running"
-    });
-});
 
 const seedProducts = async () => {
     const productCount = await Product.countDocuments();
@@ -117,16 +106,68 @@ const seedProducts = async () => {
     console.log("Seeded default products");
 };
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
-    .then(async () => {
-        console.log("MongoDB connected");
-        await seedProducts();
+// Database connection helper
+let isConnected = false;
+const connectDB = async () => {
+    if (isConnected || mongoose.connection.readyState >= 1) {
+        return;
+    }
+    if (!process.env.MONGO_URI) {
+        throw new Error("MONGO_URI is not configured");
+    }
+    await mongoose.connect(process.env.MONGO_URI);
+    isConnected = true;
+    console.log("MongoDB connected");
+    await seedProducts();
+};
 
-        app.listen(process.env.PORT, () => {
-            console.log(`Server running on port ${process.env.PORT}`);
+// Ensure database connection middleware
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        console.error("MongoDB connection failed:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "Database connection failed"
         });
-    })
-    .catch((error) => {
-        console.log("MongoDB connection failed:", error.message);
-    }); 
+    }
+});
+
+// Routes mounted at root and at /api for Vercel Services compatibility
+const mountRoutes = (prefix = "") => {
+    app.use(`${prefix}/customers`, customerRoutes);
+    app.use(`${prefix}/products`, productRoutes);
+    app.use(`${prefix}/wishlist`, wishlistRoutes);
+    app.use(`${prefix}/cart`, cartRoutes);
+    app.use(`${prefix}/orders`, orderRoutes);
+
+    app.get(`${prefix}/test-route`, (req, res) => {
+        res.json({ message: "Routes are working" });
+    });
+
+    app.get(prefix || "/", (req, res) => {
+        res.json({ message: "ShopKart Backend is running" });
+    });
+};
+
+mountRoutes("");
+mountRoutes("/api");
+
+// Local development server listener
+if (require.main === module) {
+    const PORT = process.env.PORT || 5000;
+    connectDB()
+        .then(() => {
+            app.listen(PORT, () => {
+                console.log(`Server running on port ${PORT}`);
+            });
+        })
+        .catch((error) => {
+            console.error("Failed to start server:", error.message);
+        });
+}
+
+module.exports = app;
+ 
