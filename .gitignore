@@ -1,0 +1,11 @@
+node_modules/
+.env
+.env.*
+!.env.example
+backend/.env
+backend/password.txt
+frontend/dist/
+dist/
+dist-ssr/
+*.log
+.DS_Store
