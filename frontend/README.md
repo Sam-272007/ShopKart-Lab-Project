@@ -1,16 +1,43 @@
-# React + Vite
+# ShopKart Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The modern, responsive client-side web application for **ShopKart**, built with React 19, Vite, React Router 7, and modern CSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Authentication Flow**: User registration and login with session persistence using secure HTTP-only cookies.
+- **Product Catalog**: Dynamic catalog with real-time text search, category filtering, and price sorting.
+- **Product Details**: Comprehensive product view with real-time stock availability, descriptions, and high-res imagery.
+- **Persistent Wishlist**: Save favorite items across sessions with instantaneous add/remove toggles.
+- **Stock-Validated Cart**: Dynamic cart with quantity increments, real-time subtotal calculation, and stock boundary checks.
+- **Razorpay Checkout**: Seamless integration with Razorpay Checkout modal for mock payments.
+- **Order Tracking**: Detailed purchase history and per-order breakdown with payment verification status.
+- **Customer Profile**: Profile dashboard displaying account details and one-click secure logout.
 
-## React Compiler
+## Setup & Running
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-## Expanding the Oxlint configuration
+2. **Configure environment**:
+   Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+   Set `VITE_API_URL` to point to your backend API (defaults to `http://localhost:5000`).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+3. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+
+4. **Production build**:
+   ```bash
+   npm run build
+   ```
+
+5. **Linting**:
+   ```bash
+   npm run lint
+   ```
